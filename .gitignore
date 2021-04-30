@@ -1,3 +1,2 @@
-Datasets
-__pycache__
-models_seq2seq
+*__pycache__/*
+*models_seq2seq/
