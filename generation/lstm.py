@@ -50,8 +50,9 @@ class Seq2SeqModel(BaseModel):
         # TODO
         l = len(self.dictionary)
         self.emb = nn.Embedding(l, 10)
-        self.enc = nn.LSTM(10,l,2,batch_first =True, bidirectional=True)
-        self.dec = nn.LSTM(10,l,2,batch_first =True)
+        self.enc = nn.LSTM(10,64,2,batch_first =True)
+        self.dec = nn.LSTM(10,64,2,batch_first =True)
+        self.fc = nn.Linear(64,l)
 
     def logits(self, source, prev_outputs, **unused):
         # TODO
@@ -59,6 +60,7 @@ class Seq2SeqModel(BaseModel):
         y = self.emb(prev_outputs)
         output, hidden = self.enc(x)
         logits, hidden = self.dec(y,hidden)
+        logits = self.fc(logits)
         return logits
     
     def get_loss(self, source, prev_outputs, target, reduce=True, **unused):
