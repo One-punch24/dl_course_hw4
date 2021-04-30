@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import torchtext
 
 class BaseModel(nn.Module):
 
@@ -49,9 +50,10 @@ class Seq2SeqModel(BaseModel):
         super().__init__(args, dictionary)
         # TODO
         l = len(self.dictionary)
-        self.emb = nn.Embedding(l, 10)
-        self.enc = nn.LSTM(10,64,2,batch_first =True)
-        self.dec = nn.LSTM(10,64,2,batch_first =True)
+        # self.emb = nn.Embedding(l, 32)
+        self.vec = torchtext.vocab.FastText(language='zh')
+        self.enc = nn.LSTM(32,64,2,batch_first =True)
+        self.dec = nn.LSTM(32,64,2,batch_first =True)
         self.fc = nn.Linear(64,l)
 
     def logits(self, source, prev_outputs, **unused):
