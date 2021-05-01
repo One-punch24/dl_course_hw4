@@ -90,8 +90,8 @@ class Seq2SeqDataset(Dataset):
             self.src_file = os.path.join(data_path, "test", "in.txt")
             self.tgt_file = os.path.join(data_path, "test", "out.txt")
             
-        with open(self.src_file) as fsrc, open(self.tgt_file) as ftgt:
-        # with open(self.src_file,encoding='utf-8') as fsrc, open(self.tgt_file,encoding='utf-8') as ftgt:
+        # with open(self.src_file) as fsrc, open(self.tgt_file) as ftgt:
+        with open(self.src_file,encoding='utf-8') as fsrc, open(self.tgt_file,encoding='utf-8') as ftgt:
             self.src_lines = fsrc.readlines()
             self.tgt_lines = ftgt.readlines()
         if self.split == "train":

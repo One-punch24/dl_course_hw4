@@ -49,7 +49,7 @@ def train(args):
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, collate_fn=train_set.collate_fn, shuffle=True)
 
-    evaluate(model, valid_set)
+    # evaluate(model, valid_set)
     for epoch in range(args.num_epoch):
         model.train()
         with tqdm(train_loader, desc="training") as pbar:

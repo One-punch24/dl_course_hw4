@@ -1,5 +1,6 @@
 import copy
 import torch
+from torch._C import device
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
@@ -43,6 +44,17 @@ class LMModel(BaseModel):
         outputs = ""
         return outputs
 
+def get2Vec(di):
+    d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
+    vec = []
+    for s in di.symbols:
+        vec.append(d.get_vecs_by_tokens(s))
+    vec = torch.stack(vec)
+    emb = nn.Embedding(len(di),300)
+    emb.from_pretrained(vec)
+    return emb
+
+# get2Vec()
 
 class Seq2SeqModel(BaseModel):
 
@@ -51,15 +63,16 @@ class Seq2SeqModel(BaseModel):
         # TODO
         l = len(self.dictionary)
         # self.emb = nn.Embedding(l, 32)
-        self.vec = torchtext.vocab.FastText(language='zh')
-        self.enc = nn.LSTM(32,64,2,batch_first =True)
-        self.dec = nn.LSTM(32,64,2,batch_first =True)
+        self.vec = get2Vec(self.dictionary)
+        self.enc = nn.LSTM(300,64,2,batch_first =True)
+        self.dec = nn.LSTM(300,64,2,batch_first =True)
         self.fc = nn.Linear(64,l)
 
     def logits(self, source, prev_outputs, **unused):
         # TODO
-        x = self.emb(source)
-        y = self.emb(prev_outputs)
+        x = self.vec(source)
+        y = self.vec(prev_outputs)
+
         output, hidden = self.enc(x)
         logits, hidden = self.dec(y,hidden)
         logits = self.fc(logits)
@@ -90,4 +103,9 @@ class Seq2SeqModel(BaseModel):
         '''
         # TODO 
         outputs = ""
+        if beam_size == None:
+            beam_size = 5
+        x = self.dictionary.index(inputs)
+        for x in range(max_len):
+            logits = 0
         return outputs
