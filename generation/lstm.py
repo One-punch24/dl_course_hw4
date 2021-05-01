@@ -65,9 +65,9 @@ class Seq2SeqModel(BaseModel):
         l = len(self.dictionary)
         # self.emb = nn.Embedding(l, 32)
         self.vec = get2Vec(self.dictionary)
-        self.enc = nn.LSTM(300,64,2,batch_first =True)
-        self.dec = nn.LSTM(300,64,2,batch_first =True)
-        self.fc = nn.Linear(64,l)
+        self.enc = nn.LSTM(300,128,4,batch_first =True,bidirectional=True)
+        self.dec = nn.LSTM(300,128,4,batch_first =True)
+        self.fc = nn.Linear(128,l)
 
     def logits(self, source, prev_outputs, **unused):
         # TODO
@@ -128,12 +128,13 @@ class Seq2SeqModel(BaseModel):
                     p = sample["lprob"]
                     # print(x,s,lprobs,lprobs[x])
                     if x == eos:
-                        final.append({"str":s+[x,], "lprob": l + lprobs[x], "hidden":hidden})
+                        if len(s) == len(inputs)+1:
+                            final.append({"str":s+[x,], "lprob": l + lprobs[x], "hidden":hidden})
                     else:
                         tmp.append({"str":s+[x,], "lprob": l + lprobs[x], "hidden":hidden})
                     lprobs[x] = -Inf
             tmp.sort(key = lambda x: -x["lprob"])
-            rklist = tmp[:beam_size-len(final)]
+            rklist = tmp[:beam_size]
             if len(final) == beam_size:
                 break
         final.sort(key = lambda x: -x["lprob"])
