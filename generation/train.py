@@ -58,6 +58,7 @@ def train(args):
                 optimizer.zero_grad()
                 loss = model.get_loss(**samples)
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(optimizer.parameters(), 1, norm_type='inf')
                 optimizer.step()
                 losses.append(loss.item())
                 pbar.set_description("Epoch: %d, Loss: %0.8f, lr: %0.6f" % (epoch + 1, np.mean(losses), optimizer.param_groups[0]['lr']))

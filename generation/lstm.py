@@ -49,7 +49,9 @@ def get2Vec(di):
     d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
     vec = []
     for s in di.symbols:
-        vec.append(d.get_vecs_by_tokens(s))
+        v = d.get_vecs_by_tokens(s)
+        
+        vec.append(v)
     vec = torch.stack(vec)
     emb = nn.Embedding(len(di),300)
     emb.from_pretrained(vec)
@@ -65,9 +67,9 @@ class Seq2SeqModel(BaseModel):
         l = len(self.dictionary)
         # self.emb = nn.Embedding(l, 32)
         self.vec = get2Vec(self.dictionary)
-        self.enc = nn.LSTM(300,64,4, batch_first = True, dropout=.5, bidirectional=True)
-        self.dec = nn.LSTM(300,128,4, batch_first = True, dropout=.5)
-        self.fc2 = nn.Linear(128,l)
+        self.enc = nn.LSTM(300,32,3, batch_first = True, dropout=.5, bidirectional=True)
+        self.dec = nn.LSTM(300,64,3, batch_first = True, dropout=.5)
+        self.fc2 = nn.Linear(64,l)
         
     def change(self, h):
         a,b,c = h.shape
