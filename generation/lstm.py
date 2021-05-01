@@ -131,19 +131,26 @@ class Seq2SeqModel(BaseModel):
                 for k in range(beam_size):
                     x = torch.argmax(lprobs).item()
                     s = sample["str"].copy()
-                    p = sample["lprob"]
+                    lp = sample["lprob"]
                     # print(x,s,lprobs,lprobs[x])
                     if x == eos:
-                        # if len(s) == len(inputs)+1:
-                        final.append({"str":s+[x,], "lprob": l + lprobs[x], "hidden":hidden})
+                        if len(s) == len(inputs)+1:
+                            final.append({"str":s+[x,], "lprob": lp + lprobs[x], "hidden":hidden})
                     else:
-                        tmp.append({"str":s+[x,], "lprob": l + lprobs[x], "hidden":hidden})
+                        tmp.append({"str":s+[x,], "lprob": lp + lprobs[x], "hidden":hidden})
                     lprobs[x] = -Inf
             tmp.sort(key = lambda x: -x["lprob"])
             rklist = tmp[:beam_size]
             if len(final) == beam_size:
                 break
         final.sort(key = lambda x: -x["lprob"])
+        for x in final:
+            t = x["str"]
+            outputs = "" 
+            for i in t:
+                outputs += self.dictionary.symbols[i]    
+            print(outputs, x["lprob"])
+
         final = final[0]["str"]
         outputs = "" 
         for i in final:

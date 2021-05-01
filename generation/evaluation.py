@@ -53,4 +53,7 @@ if __name__ == "__main__":
                     print("改革春风吹满地-->", model.generate("改革春风吹满地", beam_size=10))
                     print("苟利国家生死以-->", model.generate("苟利国家生死以", beam_size=10))
                     print("明日方舟-->", model.generate("明日方舟", beam_size=10))
+                    print("床前明月光-->", model.generate("床前明月光", beam_size=10))
+                    print("落霞，与孤鹜齐飞-->", model.generate("落霞，与孤鹜齐飞", beam_size=10))
+                    print("闲来野钓人稀处-->", model.generate("闲来野钓人稀处", beam_size=10))
             print("-" * 50)
