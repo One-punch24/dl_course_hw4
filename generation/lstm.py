@@ -66,18 +66,24 @@ class Seq2SeqModel(BaseModel):
         # self.emb = nn.Embedding(l, 32)
         self.vec = get2Vec(self.dictionary)
         self.enc = nn.LSTM(300,64,4, batch_first = True, dropout=.5, bidirectional=True)
-        self.fc1 = nn.Linear(128,64)
-        self.dec = nn.LSTM(300,64,4, batch_first = True, dropout=.5)
-        self.fc2 = nn.Linear(64,l)
+        self.dec = nn.LSTM(300,128,4, batch_first = True, dropout=.5)
+        self.fc2 = nn.Linear(128,l)
+        
+    def change(self, h):
+        a,b,c = h.shape
+        h = h.permute((1,2,0))
+        h = h.reshape((b,c*2,a//2))
+        h = h.permute((2,0,1))
+        return h.contiguous()
 
     def logits(self, source, prev_outputs, **unused):
         # TODO
         output, hidden = self.enc(self.vec(source))
-        hidden = self.fc1(hidden)
+        hidden = (self.change(hidden[0]), self.change(hidden[1]))
         logits, hidden = self.dec(self.vec(prev_outputs),hidden)
         logits = self.fc2(logits)
         return logits
-    
+
     def get_loss(self, source, prev_outputs, target, reduce=True, **unused):
         # print(source.shape)
         # print(prev_outputs.shape)
@@ -109,7 +115,7 @@ class Seq2SeqModel(BaseModel):
         source = [self.dictionary.index(s) for s in inputs]
         source = torch.tensor(source,dtype=torch.int32).reshape((1,-1)).to(device)
         out, hidden = self.enc(self.vec(source))
-        hidden = self.fc1(hidden)
+        hidden = (self.change(hidden[0]), self.change(hidden[1]))
         
         bos = self.dictionary.bos()
         eos = self.dictionary.eos()
@@ -121,7 +127,7 @@ class Seq2SeqModel(BaseModel):
                 prev = torch.tensor([sample["str"][-1],]).reshape((1,1)).to(device)
                 logits, hidden = self.dec(self.vec(prev),sample["hidden"])
                 logits = self.fc2(logits).reshape(-1)
-                lprobs = F.log_softmax(logits)
+                lprobs = F.log_softmax(logits,dim=0)
                 for k in range(beam_size):
                     x = torch.argmax(lprobs).item()
                     s = sample["str"].copy()
