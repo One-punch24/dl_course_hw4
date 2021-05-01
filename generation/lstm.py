@@ -71,9 +71,9 @@ class Seq2SeqModel(BaseModel):
         
     def change(self, h):
         a,b,c = h.shape
-        h = h.permute((1,2,0))
-        h = h.reshape((b,c*2,a//2))
-        h = h.permute((2,0,1))
+        h = h.reshape((a//2,2,b,c))
+        h = h.permute((0,2,3,1))
+        h = h.reshape((a//2,b,c*2))
         return h.contiguous()
 
     def logits(self, source, prev_outputs, **unused):
