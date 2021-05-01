@@ -51,4 +51,6 @@ if __name__ == "__main__":
                     print("好-->", model.generate("好", beam_size=3))
                 elif task == "seq2seq":
                     print("改革春风吹满地-->", model.generate("改革春风吹满地", beam_size=2))
+                    print("苟利国家生死以-->", model.generate("苟利国家生死以", beam_size=2))
+                    print("深度学习，神经网络-->", model.generate("深度学习，神经网络", beam_size=2))
             print("-" * 50)

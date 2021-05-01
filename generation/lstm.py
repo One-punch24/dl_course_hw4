@@ -1,4 +1,5 @@
 import copy
+from numpy.core.numeric import Inf
 import torch
 from torch._C import device
 import torch.nn as nn
@@ -85,6 +86,7 @@ class Seq2SeqModel(BaseModel):
         # for j in range(source.shape[1]):
         #     print(self.dictionary[source[0,j]], self.dictionary[prev_outputs[0,j]], self.dictionary[target[0,j]])
         # exit()
+        
         logits = self.logits(source, prev_outputs)
         lprobs = F.log_softmax(logits, dim=-1).view(-1, logits.size(-1))
         return F.nll_loss(
@@ -102,10 +104,41 @@ class Seq2SeqModel(BaseModel):
         output 下联: "复兴政策暖万家"
         '''
         # TODO 
-        outputs = ""
+        device = self.vec.weight.device
         if beam_size == None:
-            beam_size = 5
-        x = self.dictionary.index(inputs)
-        for x in range(max_len):
-            logits = 0
+            beam_size = 1
+        source = [self.dictionary.index(s) for s in inputs]
+        source = torch.tensor(source,dtype=torch.int32).reshape((1,-1)).to(device)
+        out, hidden = self.enc(self.vec(source))
+        
+        bos = self.dictionary.bos()
+        eos = self.dictionary.eos()
+        final = []
+        rklist = [ {"str":[bos,],"lprob":0, "hidden":hidden}, ]
+        for l in range(max_len):
+            tmp = []
+            for sample in rklist:
+                prev = torch.tensor([sample["str"][-1],]).reshape((1,1)).to(device)
+                logits, hidden = self.dec(self.vec(prev),sample["hidden"])
+                logits = self.fc(logits).reshape(-1)
+                lprobs = F.log_softmax(logits)
+                for k in range(beam_size):
+                    x = torch.argmax(lprobs).item()
+                    s = sample["str"].copy()
+                    p = sample["lprob"]
+                    # print(x,s,lprobs,lprobs[x])
+                    if x == eos:
+                        final.append({"str":s+[x,], "lprob": l + lprobs[x], "hidden":hidden})
+                    else:
+                        tmp.append({"str":s+[x,], "lprob": l + lprobs[x], "hidden":hidden})
+                    lprobs[x] = -Inf
+            tmp.sort(key = lambda x: -x["lprob"])
+            rklist = tmp[:beam_size-len(final)]
+            if len(final) == beam_size:
+                break
+        final.sort(key = lambda x: -x["lprob"])
+        final = final[0]["str"]
+        outputs = "" 
+        for i in final:
+            outputs += self.dictionary.symbols[i]
         return outputs

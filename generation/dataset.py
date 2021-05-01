@@ -15,7 +15,7 @@ class LMDataset(Dataset):
     def __init__(self, data_path=os.path.join(os.path.dirname(cur_dir), "Datasets/CCPC/"), vocab_file=os.path.join(os.path.dirname(cur_dir), "Datasets/CCPC/vocab.txt"), split="train", device="cpu"):
 
         self.filename = os.path.join(data_path, "ccpc_{}_v1.0.json".format(split))
-        self.data = open(self.filename).readlines()
+        self.data = open(self.filename,encoding='utf-8').readlines()
         self.vocab_file = vocab_file
         self.device = device
         self.split = split
