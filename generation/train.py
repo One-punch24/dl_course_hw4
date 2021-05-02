@@ -58,7 +58,7 @@ def train(args):
                 optimizer.zero_grad()
                 loss = model.get_loss(**samples)
                 loss.backward()
-                torch.nn.utils.clip_grad_value(model.parameters(), 5)
+                torch.nn.utils.clip_grad_value_(model.parameters(), 5)
                 optimizer.step()
                 losses.append(loss.item())
                 pbar.set_description("Epoch: %d, Loss: %0.8f, lr: %0.6f" % (epoch + 1, np.mean(losses), optimizer.param_groups[0]['lr']))
@@ -67,6 +67,9 @@ def train(args):
             torch.save(model, args.save_dir + "/{}_{}.pt".format(args.model_type, epoch + 1))
             torch.save(optimizer.state_dict(), args.save_dir + "/{}opt_{}.pt".format(args.model_type, epoch + 1))
         evaluate(model,valid_set)
+        
+        print("改革春风吹满地-->", model.generate("改革春风吹满地", beam_size=5))
+        print("苟利国家生死以-->", model.generate("苟利国家生死以", beam_size=5))
 
 if __name__ == "__main__":
     args = get_args()

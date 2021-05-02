@@ -146,12 +146,12 @@ class Seq2SeqModel(BaseModel):
             if len(final) == beam_size:
                 break
         final.sort(key = lambda x: -x["lprob"])
-        for x in final:
-            t = x["str"]
-            outputs = "" 
-            for i in t:
-                outputs += self.dictionary.symbols[i]    
-            print(outputs, x["lprob"])
+        # for x in final:
+        #     t = x["str"]
+        #     outputs = "" 
+        #     for i in t:
+        #         outputs += self.dictionary.symbols[i]    
+        #     print(outputs, x["lprob"])
 
         final = final[0]["str"]
         outputs = "" 
