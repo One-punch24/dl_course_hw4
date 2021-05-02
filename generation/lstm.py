@@ -67,9 +67,9 @@ class Seq2SeqModel(BaseModel):
         l = len(self.dictionary)
         # self.emb = nn.Embedding(l, 32)
         self.vec = get2Vec(self.dictionary)
-        self.enc = nn.LSTM(300,32,3, batch_first = True, dropout=.5, bidirectional=True)
-        self.dec = nn.LSTM(300,64,3, batch_first = True, dropout=.5)
-        self.fc2 = nn.Linear(64,l)
+        self.enc = nn.LSTM(300,64,2, batch_first = True, dropout=.5, bidirectional=True)
+        self.dec = nn.LSTM(300,128,2, batch_first = True, dropout=.5)
+        self.fc2 = nn.Linear(128,l)
         
     def change(self, h):
         a,b,c = h.shape
@@ -100,7 +100,7 @@ class Seq2SeqModel(BaseModel):
             lprobs, 
             target.view(-1),
             ignore_index=self.padding_idx,
-            reduction="sum" if reduce else "none",
+            reduction="mean" if reduce else "none",
         )
 
     @torch.no_grad()
