@@ -1,4 +1,3 @@
-
 from typing import Dict, List, Optional, Tuple
 import copy
 import torch
@@ -114,10 +113,51 @@ class Seq2SeqModel(nn.Module):
         
         output 下联: "复兴政策暖万家"
         '''
-        # TODO 
-        outputs = ""
-        return outputs
+        # TODO       
+        device = self.out_proj.weight.device
+        if beam_size == None:
+            beam_size = 1
+        source = [self.dictionary.index(s) for s in inputs]
+        source = torch.tensor(source,dtype=torch.int32).reshape((1,-1)).to(device)
+        
+        bos = self.dictionary.bos()
+        eos = self.dictionary.eos()
+        final = []
+        rklist = [ {"str":[bos,],"lprob":0}, ]
+        for l in range(max_len):
+            tmp = []
+            for sample in rklist:
+                s = sample["str"]
+                lp = sample["lprob"]
+                prev = torch.tensor(s).reshape((1,1)).to(device)
+                logits = self.logits(source,prev)
+                lprobs = F.log_softmax(logits, dim=-1).view(-1, logits.size(-1))
+                topk = torch.topk(logits,beam_size).indices
+                topk = list(topk)
+                for x in topk:
+                    if x == eos:
+                        if len(s) == len(inputs)+1:
+                            final.append({"str":s+[x,], "lprob": lp + lprobs[x]})
+                    else:
+                        tmp.append({"str":s+[x,], "lprob": lp + lprobs[x]})
+                    
+            tmp.sort(key = lambda x: -x["lprob"])
+            rklist = tmp[:beam_size]
+            if len(final) == beam_size:
+                break
+        final.sort(key = lambda x: -x["lprob"])
+        # for x in final:
+        #     t = x["str"]
+        #     outputs = "" 
+        #     for i in t:
+        #         outputs += self.dictionary.symbols[i]    
+        #     print(outputs, x["lprob"])
 
+        final = final[0]["str"]
+        outputs = "" 
+        for i in final:
+            outputs += self.dictionary.symbols[i]
+        return outputs
 
 def make_padding_mask(input_ids, padding_idx=1):
     """True for pad tokens"""
@@ -560,6 +600,31 @@ class Attention(nn.Module):
         """Input shape: Time(SeqLen) x Batch x Channel"""
         # TODO attn_output should the same shape with query
 
+        SeqLen_q, batch, Channel = query.shape
+        SeqLen_k = key.shape[0]
+        Q = self.q_proj(query)
+        K = self.k_proj(key)
+        V = self.v_proj(key)
+        Q = Q.reshape((SeqLen_q, batch, self.num_heads, self.head_dim)).permute(1,2,0,3).contiguous()
+        K = K.reshape((SeqLen_k, batch, self.num_heads, self.head_dim)).permute(1,2,3,0).contiguous()
+        t = batch * self.num_heads
+        Q = Q.reshape((t,SeqLen_q,self.head_dim))
+        K = K.reshape((t,self.head_dim,SeqLen_k))
+        M = torch.bmm(Q,K) # B num lq lk
+        M = M / (self.head_dim ** .5)
+        if attn_mask != None:
+            # print(M.shape, attn_mask.shape)
+            M = M + attn_mask.unsqueeze(0)
+        M = F.softmax(M,2) # B*nh lq lk
+
+        V = V.reshape((SeqLen_k, batch, self.num_heads, self.head_dim)).permute(1,2,0,3) # B nh lk hd
+        V = V.reshape((t,1,SeqLen_k,self.head_dim))
+        M = M.unsqueeze(3) * V
+        # print(M.shape)
+        M = M.sum(2)
+        M = M.reshape((batch,self.num_heads,SeqLen_q,self.head_dim)).permute(2,0,1,3)
+        M = M.reshape((SeqLen_q,batch,Channel)).contiguous()
+        attn_output = M
         return attn_output
 
 
