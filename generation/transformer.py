@@ -103,7 +103,8 @@ class Seq2SeqModel(nn.Module):
             lprobs, 
             target.view(-1),
             ignore_index=self.padding_idx,
-            reduction="sum" if reduce else "none",
+            reduction="mean" if reduce else "none",
+            # reduction="sum" if reduce else "none",
         )
 
     @torch.no_grad()
