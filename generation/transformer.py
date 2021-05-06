@@ -1,3 +1,4 @@
+from math import inf
 from typing import Dict, List, Optional, Tuple
 import copy
 import torch
@@ -633,7 +634,7 @@ class Attention(nn.Module):
         K = self.k_proj(key)
         if key_padding_mask != None:
             tmp = key_padding_mask.permute(1,0).unsqueeze(2)
-            K = K.masked_fill(tmp,0)
+            K = K.masked_fill(tmp,-inf)
         V = self.v_proj(key)
         Q = Q.reshape((SeqLen_q, batch, self.num_heads, self.head_dim)).permute(1,2,0,3).contiguous()
         K = K.reshape((SeqLen_k, batch, self.num_heads, self.head_dim)).permute(1,2,3,0).contiguous()
