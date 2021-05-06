@@ -632,9 +632,6 @@ class Attention(nn.Module):
         SeqLen_k = key.shape[0]
         Q = self.q_proj(query)
         K = self.k_proj(key)
-        if key_padding_mask != None:
-            tmp = key_padding_mask.permute(1,0).unsqueeze(2)
-            K = K.masked_fill(tmp,-inf)
         V = self.v_proj(key)
         Q = Q.reshape((SeqLen_q, batch, self.num_heads, self.head_dim)).permute(1,2,0,3).contiguous()
         K = K.reshape((SeqLen_k, batch, self.num_heads, self.head_dim)).permute(1,2,3,0).contiguous()
@@ -642,6 +639,10 @@ class Attention(nn.Module):
         Q = Q.reshape((t,SeqLen_q,self.head_dim))
         K = K.reshape((t,self.head_dim,SeqLen_k))
         M = torch.bmm(Q,K) # B num lq lk
+        if key_padding_mask != None:
+            b, lk = key_padding_mask.shape
+            tmp = key_padding_mask.reshape((b,1,1,lk))
+            M = M.masked_fill(tmp,-inf)
         M = M / (self.head_dim ** .5)
         if attn_mask != None:
             # print(M.shape, attn_mask.shape)
