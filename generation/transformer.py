@@ -93,7 +93,7 @@ class Seq2SeqModel(nn.Module):
         self.out_proj = nn.Linear(args.embedding_dim, len(dictionary))
 
         di = self.dictionary
-        d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
+        d = torchtext.vocab.Vectors('../sgns.sikuquanshu.bigram')
         vec = []
         for s in di.symbols:
             v = d.stoi.get(s,-1)
