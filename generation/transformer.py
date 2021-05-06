@@ -640,12 +640,10 @@ class Attention(nn.Module):
         K = K.reshape((t,self.head_dim,SeqLen_k))
         M = torch.bmm(Q,K) # B num lq lk
         if key_padding_mask != None:
-            b, lk = key_padding_mask.shape
-            tmp = key_padding_mask.reshape((b,1,1,lk))
-            print(SeqLen_k)
-            print(M.shape)
-            print(tmp.shape)
+            tmp = key_padding_mask.reshape((batch,1,1,SeqLen_k))
+            M = M.reshape((batch,self.num_heads,SeqLen_q,SeqLen_k))
             M = M.masked_fill(tmp,-inf)
+            M = M .reshape((t,SeqLen_q,SeqLen_k))
         M = M / (self.head_dim ** .5)
         if attn_mask != None:
             # print(M.shape, attn_mask.shape)
