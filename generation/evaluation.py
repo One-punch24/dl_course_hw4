@@ -58,5 +58,5 @@ if __name__ == "__main__":
                     print("十年生死两茫茫-->", model.generate("十年生死两茫茫", beam_size=b))
                     print("人有悲欢离合-->", model.generate("人有悲欢离合", beam_size=b))
                     print("浊心斯卡蒂-->", model.generate("浊心斯卡蒂", beam_size=b))
-                    print("邓小平时代-->", model.generate("邓小平时代", beam_size=b))
+                    print("大江东去，浪淘尽，千古风流人物-->", model.generate("大江东去，浪淘尽，千古风流人物", beam_size=b))
             print("-" * 50)

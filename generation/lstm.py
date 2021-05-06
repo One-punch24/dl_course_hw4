@@ -99,8 +99,8 @@ class Seq2SeqModel(BaseModel):
             lprobs, 
             target.view(-1),
             ignore_index=self.padding_idx,
-            reduction="mean" if reduce else "none",
-        )
+            reduction="sum" if reduce else "none",
+        ) / source.shape[0]
 
     @torch.no_grad()
     def generate(self, inputs, max_len=100, beam_size=None):

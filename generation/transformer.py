@@ -115,9 +115,9 @@ class Seq2SeqModel(nn.Module):
             lprobs, 
             target.view(-1),
             ignore_index=self.padding_idx,
-            reduction="mean" if reduce else "none",
-            # reduction="sum" if reduce else "none",
-        )
+            # reduction="mean" if reduce else "none",
+            reduction="sum" if reduce else "none",
+        ) / source.shape[0]
 
     @torch.no_grad()
     def generate(self, inputs, max_len=100, beam_size=None):
@@ -151,16 +151,13 @@ class Seq2SeqModel(nn.Module):
                 lprobs = F.log_softmax(logits, dim=0).view(-1)
                 topk = torch.topk(logits,beam_size).indices
                 topk = list(topk.reshape(-1))
+                
+                if len(s) == len(inputs)+1:
+                    final.append({"str":s+[eos,], "lprob": lp + lprobs[eos]})
                 for t in topk:
                     x = t.item()
-                    # print(x,eos)
-                    if x == eos:
-                        # if len(s) == len(inputs)+1:
-                        final.append({"str":s+[x,], "lprob": lp + lprobs[x]})
-                    else:
-                        tmp.append({"str":s+[x,], "lprob": lp + lprobs[x]})
-                        if len(s) == len(inputs):
-                            final.append({"str":s+[x,], "lprob": lp + lprobs[x]})
+                    tmp.append({"str":s+[x,], "lprob": lp + lprobs[x]})
+                    
                     
             tmp.sort(key = lambda x: -x["lprob"])
             rklist = tmp[:beam_size]
