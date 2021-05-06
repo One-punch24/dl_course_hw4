@@ -642,6 +642,9 @@ class Attention(nn.Module):
         if key_padding_mask != None:
             b, lk = key_padding_mask.shape
             tmp = key_padding_mask.reshape((b,1,1,lk))
+            print(SeqLen_k)
+            print(M.shape)
+            print(tmp.shape)
             M = M.masked_fill(tmp,-inf)
         M = M / (self.head_dim ** .5)
         if attn_mask != None:
