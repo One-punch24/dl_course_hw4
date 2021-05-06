@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 import random
 import json
+import torchtext
 
 ACT2FN = {
     "relu": F.relu,
@@ -90,6 +91,17 @@ class Seq2SeqModel(nn.Module):
         print(self.config)
         self.endecoder = TransformerEncoderDecoder(self.config)
         self.out_proj = nn.Linear(args.embedding_dim, len(dictionary))
+
+        di = self.dictionary
+        d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
+        vec = []
+        for s in di.symbols:
+            v = d.get_vecs_by_tokens(s)
+            vec.append(v)
+        vec = torch.stack(vec)
+        self.endecoder.shared.from_pretrained(vec)
+        
+
 
     def logits(self, source, prev_outputs, **unused):
         hidden = self.endecoder(source, prev_outputs)

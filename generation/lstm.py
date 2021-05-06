@@ -57,7 +57,6 @@ def get2Vec(di):
     emb.from_pretrained(vec)
     return emb
 
-# get2Vec()
 
 class Seq2SeqModel(BaseModel):
 
