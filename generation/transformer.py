@@ -93,10 +93,15 @@ class Seq2SeqModel(nn.Module):
         self.out_proj = nn.Linear(args.embedding_dim, len(dictionary))
 
         di = self.dictionary
-        d = torchtext.vocab.Vectors('../sgns.literature.bigram-char',unk_init = nn.init.xavier_uniform)
+        d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
         vec = []
         for s in di.symbols:
-            v = d.get_vecs_by_tokens(s)
+            v = d.stoi.get(s,-1)
+            if v == -1:
+                v = torch.randn(300)
+            else:
+                v = d.vectors[v]
+            # print(s,v.shape)
             vec.append(v)
         vec = torch.stack(vec)
         self.endecoder.shared.from_pretrained(vec)
