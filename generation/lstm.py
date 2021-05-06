@@ -113,13 +113,13 @@ class Seq2SeqModel(BaseModel):
         device = self.vec.weight.device
         if beam_size == None:
             beam_size = 1
-        source = [self.dictionary.index(s) for s in inputs]
+        bos = self.dictionary.bos()
+        eos = self.dictionary.eos()
+        source = [bos,] + [self.dictionary.index(s) for s in inputs]
         source = torch.tensor(source,dtype=torch.int32).reshape((1,-1)).to(device)
         out, hidden = self.enc(self.vec(source))
         hidden = (self.change(hidden[0]), self.change(hidden[1]))
         
-        bos = self.dictionary.bos()
-        eos = self.dictionary.eos()
         final = []
         rklist = [ {"str":[bos,],"lprob":0, "hidden":hidden}, ]
         for l in range(max_len):

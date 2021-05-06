@@ -69,7 +69,8 @@ def train(args):
                 optimizer.step()
                 losses.append(loss.item())
                 pbar.set_description("Epoch: %d, Loss: %0.8f, lr: %0.6f" % (epoch + 1, np.mean(losses), optimizer.param_groups[0]['lr']))
-
+        scheduler.step()
+        
         if epoch % args.save_interval == 0:
             torch.save(model, args.save_dir + "/{}_{}.pt".format(args.model_type, epoch + 1))
             torch.save(optimizer.state_dict(), args.save_dir + "/{}opt_{}.pt".format(args.model_type, epoch + 1))

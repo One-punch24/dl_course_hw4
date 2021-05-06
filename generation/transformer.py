@@ -631,6 +631,8 @@ class Attention(nn.Module):
         SeqLen_k = key.shape[0]
         Q = self.q_proj(query)
         K = self.k_proj(key)
+        if key_padding_mask != None:
+            K = K.masked_fill(key_padding_mask,0)
         V = self.v_proj(key)
         Q = Q.reshape((SeqLen_q, batch, self.num_heads, self.head_dim)).permute(1,2,0,3).contiguous()
         K = K.reshape((SeqLen_k, batch, self.num_heads, self.head_dim)).permute(1,2,3,0).contiguous()
