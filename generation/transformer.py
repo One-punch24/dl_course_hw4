@@ -129,17 +129,25 @@ class Seq2SeqModel(nn.Module):
             for sample in rklist:
                 s = sample["str"]
                 lp = sample["lprob"]
-                prev = torch.tensor(s).reshape((1,1)).to(device)
-                logits = self.logits(source,prev)
-                lprobs = F.log_softmax(logits, dim=-1).view(-1, logits.size(-1))
+                prev = torch.tensor(s).reshape((1,-1)).to(device)
+                logits = self.logits(source,prev)[0,-1,:]
+                
+                # print(source.shape)
+                # print(prev.shape)
+                # print(logits.shape)
+                lprobs = F.log_softmax(logits, dim=0).view(-1)
                 topk = torch.topk(logits,beam_size).indices
-                topk = list(topk)
-                for x in topk:
+                topk = list(topk.reshape(-1))
+                for t in topk:
+                    x = t.item()
+                    # print(x,eos)
                     if x == eos:
-                        if len(s) == len(inputs)+1:
-                            final.append({"str":s+[x,], "lprob": lp + lprobs[x]})
+                        # if len(s) == len(inputs)+1:
+                        final.append({"str":s+[x,], "lprob": lp + lprobs[x]})
                     else:
                         tmp.append({"str":s+[x,], "lprob": lp + lprobs[x]})
+                        if len(s) == len(inputs):
+                            final.append({"str":s+[x,], "lprob": lp + lprobs[x]})
                     
             tmp.sort(key = lambda x: -x["lprob"])
             rklist = tmp[:beam_size]

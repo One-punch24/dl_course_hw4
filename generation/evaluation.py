@@ -44,16 +44,19 @@ if __name__ == "__main__":
                 print(e)
                 continue
             print(task, model_type)
-            evaluate(model, dataset)
+            # evaluate(model, dataset)
+            model.eval()
 
             if hasattr(model, "generate"):
                 if task == "lm":
                     print("好-->", model.generate("好", beam_size=3))
                 elif task == "seq2seq":
-                    print("改革春风吹满地-->", model.generate("改革春风吹满地", beam_size=10))
-                    print("苟利国家生死以-->", model.generate("苟利国家生死以", beam_size=10))
-                    print("明日，方舟-->", model.generate("明日，方舟", beam_size=10))
-                    print("十年生死两茫茫-->", model.generate("十年生死两茫茫", beam_size=10))
-                    print("人有悲欢离合-->", model.generate("人有悲欢离合", beam_size=10))
-                    print("浊心斯卡蒂-->", model.generate("浊心斯卡蒂", beam_size=10))
+                    b = 10
+                    print("改革春风吹满地-->", model.generate("改革春风吹满地", beam_size=b))
+                    print("苟利国家生死以-->", model.generate("苟利国家生死以", beam_size=b))
+                    print("明日，方舟-->", model.generate("明日，方舟", beam_size=b))
+                    print("十年生死两茫茫-->", model.generate("十年生死两茫茫", beam_size=b))
+                    print("人有悲欢离合-->", model.generate("人有悲欢离合", beam_size=b))
+                    print("浊心斯卡蒂-->", model.generate("浊心斯卡蒂", beam_size=b))
+                    print("邓小平时代-->", model.generate("邓小平时代", beam_size=b))
             print("-" * 50)
