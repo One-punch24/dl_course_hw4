@@ -83,7 +83,7 @@ class Seq2SeqModel(nn.Module):
             max_position_embeddings=100,
             n_embed=args.embedding_dim,
             n_layer=args.num_layers,
-            n_head=6,
+            n_head=12,
             pad_token_id=self.padding_idx,
             ffn_dim=args.hidden_size,
             )
@@ -93,7 +93,7 @@ class Seq2SeqModel(nn.Module):
         self.out_proj = nn.Linear(args.embedding_dim, len(dictionary))
 
         di = self.dictionary
-        d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
+        d = torchtext.vocab.Vectors('../sgns.literature.bigram-char',unk_init = nn.init.xavier_uniform)
         vec = []
         for s in di.symbols:
             v = d.get_vecs_by_tokens(s)
