@@ -51,12 +51,16 @@ if __name__ == "__main__":
                 if task == "lm":
                     print("好-->", model.generate("好", beam_size=3))
                 elif task == "seq2seq":
-                    b = 10
+                    b = 20
+                    
                     print("改革春风吹满地-->", model.generate("改革春风吹满地", beam_size=b))
                     print("苟利国家生死以-->", model.generate("苟利国家生死以", beam_size=b))
                     print("明日，方舟-->", model.generate("明日，方舟", beam_size=b))
                     print("十年生死两茫茫-->", model.generate("十年生死两茫茫", beam_size=b))
                     print("人有悲欢离合-->", model.generate("人有悲欢离合", beam_size=b))
                     print("浊心斯卡蒂-->", model.generate("浊心斯卡蒂", beam_size=b))
+                    
+                    print("火树银花合-->", model.generate("火树银花合", beam_size=b))
+                    print("身比闲云，月影溪光堪证性-->", model.generate("身比闲云，月影溪光堪证性", beam_size=b))
                     print("大江东去，浪淘尽，千古风流人物-->", model.generate("大江东去，浪淘尽，千古风流人物", beam_size=b))
             print("-" * 50)

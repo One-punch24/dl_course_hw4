@@ -23,6 +23,7 @@ def get_args():
     parser.add_argument("--save-dir", default="models")
     parser.add_argument("--seq2seq", default=False, action="store_true")
     parser.add_argument("--model-type", default="transformer", choices=["lstm", "transformer"])
+    parser.add_argument("--load-dir", default='')
     args = parser.parse_args()
     return args
 
@@ -45,9 +46,15 @@ def train(args):
         train_set = LMDataset(device=device)
         valid_set = LMDataset(split="valid", device=device)
         model = LMModel(args, train_set.dictionary).to(device)
+    
+    if args.load_dir != '':
+        _model = torch.load(args.load_dir)
+        model.load_state_dict(_model.state_dict())
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, collate_fn=train_set.collate_fn, shuffle=True)
+    
+    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[3,6], gamma=0.3)
 
     # evaluate(model, valid_set)
     for epoch in range(args.num_epoch):

@@ -93,7 +93,8 @@ class Seq2SeqModel(nn.Module):
         self.out_proj = nn.Linear(args.embedding_dim, len(dictionary))
 
         di = self.dictionary
-        d = torchtext.vocab.Vectors('../sgns.sikuquanshu.bigram')
+        # d = torchtext.vocab.Vectors('../sgns.sikuquanshu.bigram')
+        d = torchtext.vocab.Vectors('../sgns.merge.word')
         vec = []
         for s in di.symbols:
             v = d.stoi.get(s,-1)
@@ -135,11 +136,11 @@ class Seq2SeqModel(nn.Module):
         device = self.out_proj.weight.device
         if beam_size == None:
             beam_size = 1
-        source = [self.dictionary.index(s) for s in inputs]
-        source = torch.tensor(source,dtype=torch.int32).reshape((1,-1)).to(device)
-        
         bos = self.dictionary.bos()
         eos = self.dictionary.eos()
+        source = [bos,] + [self.dictionary.index(s) for s in inputs]
+        source = torch.tensor(source,dtype=torch.int32).reshape((1,-1)).to(device)
+        
         final = []
         rklist = [ {"str":[bos,],"lprob":0}, ]
         for l in range(max_len):
@@ -159,10 +160,12 @@ class Seq2SeqModel(nn.Module):
                 
                 if len(s) == len(inputs)+1:
                     final.append({"str":s+[eos,], "lprob": lp + lprobs[eos]})
+                
                 for t in topk:
                     x = t.item()
                     tmp.append({"str":s+[x,], "lprob": lp + lprobs[x]})
-                    
+                if len(final) >= beam_size:
+                    break
                     
             tmp.sort(key = lambda x: -x["lprob"])
             rklist = tmp[:beam_size]
@@ -175,11 +178,12 @@ class Seq2SeqModel(nn.Module):
         #     for i in t:
         #         outputs += self.dictionary.symbols[i]    
         #     print(outputs, x["lprob"])
-
+        print(final[0]['lprob'])
         final = final[0]["str"]
         outputs = "" 
         for i in final:
             outputs += self.dictionary.symbols[i]
+        
         return outputs
 
 def make_padding_mask(input_ids, padding_idx=1):
@@ -647,7 +651,7 @@ class Attention(nn.Module):
         M = M.sum(2)
         M = M.reshape((batch,self.num_heads,SeqLen_q,self.head_dim)).permute(2,0,1,3)
         M = M.reshape((SeqLen_q,batch,Channel)).contiguous()
-        attn_output = M
+        attn_output = self.out_proj(M)
         return attn_output
 
 
