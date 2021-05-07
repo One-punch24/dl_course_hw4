@@ -68,7 +68,11 @@ def train(args):
                 torch.nn.utils.clip_grad_value_(model.parameters(), 5)
                 optimizer.step()
                 losses.append(loss.item())
-                pbar.set_description("Epoch: %d, Loss: %0.8f, lr: %0.6f" % (epoch + 1, np.mean(losses), optimizer.param_groups[0]['lr']))
+                if len(losses)>100:
+                    now_loss = np.mean(losses[-100:])
+                else:
+                    now_loss = np.mean(losses)
+                pbar.set_description("Epoch: %d, Loss: %0.8f, lr: %0.6f, now loss: %0.8f" % (epoch + 1, np.mean(losses), optimizer.param_groups[0]['lr'], now_loss))
         scheduler.step()
         
         if epoch % args.save_interval == 0:

@@ -93,20 +93,20 @@ class Seq2SeqModel(nn.Module):
         self.endecoder = TransformerEncoderDecoder(self.config)
         self.out_proj = nn.Linear(args.embedding_dim, len(dictionary))
 
-        di = self.dictionary
-        # d = torchtext.vocab.Vectors('../sgns.sikuquanshu.bigram')
-        d = torchtext.vocab.Vectors('../sgns.merge.word')
-        vec = []
-        for s in di.symbols:
-            v = d.stoi.get(s,-1)
-            if v == -1:
-                v = torch.randn(300)
-            else:
-                v = d.vectors[v]
-            # print(s,v.shape)
-            vec.append(v)
-        vec = torch.stack(vec)
-        self.endecoder.shared.from_pretrained(vec)
+        # di = self.dictionary
+        # # d = torchtext.vocab.Vectors('../sgns.sikuquanshu.bigram')
+        # d = torchtext.vocab.Vectors('../sgns.merge.word')
+        # vec = []
+        # for s in di.symbols:
+        #     v = d.stoi.get(s,-1)
+        #     if v == -1:
+        #         v = torch.randn(300)
+        #     else:
+        #         v = d.vectors[v]
+        #     # print(s,v.shape)
+        #     vec.append(v)
+        # vec = torch.stack(vec)
+        # self.endecoder.shared.from_pretrained(vec)
         
 
 
