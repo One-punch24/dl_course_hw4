@@ -84,7 +84,7 @@ class Seq2SeqModel(nn.Module):
             max_position_embeddings=100,
             n_embed=args.embedding_dim,
             n_layer=args.num_layers,
-            n_head=16,
+            n_head=10,
             pad_token_id=self.padding_idx,
             ffn_dim=args.hidden_size,
             )
