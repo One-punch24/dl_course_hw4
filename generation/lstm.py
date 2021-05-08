@@ -111,7 +111,8 @@ class Seq2SeqModel(BaseModel):
         # print(M.shape)
         # print(Q.shape)
         x = self.fc1(torch.cat([M,Q],2))
-        x = F.tanh(self.dropout(x))
+        # x = self.dropout(x)
+        x = torch.tanh(x)
         logits = self.fc2(x)
         return logits
 
