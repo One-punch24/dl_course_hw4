@@ -102,7 +102,6 @@ class Seq2SeqModel(BaseModel):
         # print(output.shape)
         K = self.k_proj(output)
         V = self.v_proj(output)
-        V = self.dropout(V)
         M = torch.bmm(Q,K.permute(0,2,1))
         pad = self.dictionary.pad()
         key_padding_mask = (source == pad).reshape((batch,1,-1))

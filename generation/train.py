@@ -51,7 +51,7 @@ def train(args):
         _model = torch.load(args.load_dir)
         model.load_state_dict(_model.state_dict())
 
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, collate_fn=train_set.collate_fn, shuffle=True)
     
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[5,10], gamma=0.3)
