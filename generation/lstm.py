@@ -48,6 +48,7 @@ class LMModel(BaseModel):
 
 def get2Vec(di):
     d = torchtext.vocab.Vectors('../sgns.merge.word')
+    # d = torchtext.vocab.Vectors('../sgns.sikuquanshu.bigram')
     vec = []
     for s in di.symbols:
         v = d.stoi.get(s,-1)
@@ -81,8 +82,8 @@ class Seq2SeqModel(BaseModel):
         self.fc2 = nn.Linear(sz * 2 * cen,l)
         # self.dropout = nn.Dropout(0.5)
 
-        self.k_proj = nn.Linear(sz * 2 * cen,sz * 2 * cen)
-        self.v_proj = nn.Linear(sz * 2 * cen,sz * 2 * cen)
+        self.k_proj = nn.Linear(sz * 2, sz * 2 * cen)
+        self.v_proj = nn.Linear(sz * 2 * cen, sz * 2 * cen)
         
     def change(self, h):
         a,b,c = h.shape
@@ -98,6 +99,7 @@ class Seq2SeqModel(BaseModel):
         Q, hidden = self.dec(self.vec(prev_outputs),hidden)
         batch, SeqLen_q, Channel = Q.shape
         SeqLen_k = output.shape[1]
+        # print(output.shape)
         K = self.k_proj(output)
         V = self.v_proj(output)
         # V = self.dropout(V)
