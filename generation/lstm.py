@@ -74,7 +74,7 @@ class Seq2SeqModel(BaseModel):
         # self.emb = nn.Embedding(l, 32)
         self.vec = get2Vec(self.dictionary)
         sz = 512
-        cen = 2
+        cen = 1
         
         self.enc = nn.LSTM(300,sz,cen, batch_first = True, bidirectional=True)
         self.dec = nn.LSTM(300,sz * 2,cen, batch_first = True )
@@ -102,7 +102,7 @@ class Seq2SeqModel(BaseModel):
         # print(output.shape)
         K = self.k_proj(output)
         V = self.v_proj(output)
-        # V = self.dropout(V)
+        V = self.dropout(V)
         M = torch.bmm(Q,K.permute(0,2,1))
         pad = self.dictionary.pad()
         key_padding_mask = (source == pad).reshape((batch,1,-1))
@@ -115,7 +115,7 @@ class Seq2SeqModel(BaseModel):
         # print(M.shape)
         # print(Q.shape)
         x = self.fc1(torch.cat([M,Q],2))
-        # x = self.dropout(x)
+        x = self.dropout(x)
         x = torch.tanh(x)
         logits = self.fc2(x)
         return logits
