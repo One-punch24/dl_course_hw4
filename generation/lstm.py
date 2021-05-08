@@ -133,7 +133,7 @@ class Seq2SeqModel(BaseModel):
         output 下联: "复兴政策暖万家"
         '''
         # TODO 
-        device = self.out_proj.weight.device
+        device = self.fc2.weight.device
         if beam_size == None:
             beam_size = 1
         bos = self.dictionary.bos()
