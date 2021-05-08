@@ -133,36 +133,40 @@ class Seq2SeqModel(BaseModel):
         output 下联: "复兴政策暖万家"
         '''
         # TODO 
-        device = self.vec.weight.device
+        device = self.out_proj.weight.device
         if beam_size == None:
             beam_size = 1
         bos = self.dictionary.bos()
         eos = self.dictionary.eos()
         source = [bos,] + [self.dictionary.index(s) for s in inputs]
         source = torch.tensor(source,dtype=torch.int32).reshape((1,-1)).to(device)
-        out, hidden = self.enc(self.vec(source))
-        hidden = (self.change(hidden[0]), self.change(hidden[1]))
         
         final = []
-        rklist = [ {"str":[bos,],"lprob":0, "hidden":hidden}, ]
+        rklist = [ {"str":[bos,],"lprob":0}, ]
         for l in range(max_len):
             tmp = []
             for sample in rklist:
-                prev = torch.tensor([sample["str"][-1],]).reshape((1,1)).to(device)
-                logits, hidden = self.dec(self.vec(prev),sample["hidden"])
-                logits = self.fc2(logits).reshape(-1)
-                lprobs = F.log_softmax(logits,dim=0)
-                for k in range(beam_size):
-                    x = torch.argmax(lprobs).item()
-                    s = sample["str"].copy()
-                    lp = sample["lprob"]
-                    # print(x,s,lprobs,lprobs[x])
-                    if x == eos:
-                        if len(s) == len(inputs)+1:
-                            final.append({"str":s+[x,], "lprob": lp + lprobs[x], "hidden":hidden})
-                    else:
-                        tmp.append({"str":s+[x,], "lprob": lp + lprobs[x], "hidden":hidden})
-                    lprobs[x] = -Inf
+                s = sample["str"]
+                lp = sample["lprob"]
+                prev = torch.tensor(s).reshape((1,-1)).to(device)
+                logits = self.logits(source,prev)[0,-1,:]
+                
+                # print(source.shape)
+                # print(prev.shape)
+                # print(logits.shape)
+                lprobs = F.log_softmax(logits, dim=0).view(-1)
+                topk = torch.topk(logits,beam_size).indices
+                topk = list(topk.reshape(-1))
+                
+                if len(s) == len(inputs)+1:
+                    final.append({"str":s+[eos,], "lprob": lp + lprobs[eos]})
+                
+                for t in topk:
+                    x = t.item()
+                    tmp.append({"str":s+[x,], "lprob": lp + lprobs[x]})
+                if len(final) >= beam_size:
+                    break
+                    
             tmp.sort(key = lambda x: -x["lprob"])
             rklist = tmp[:beam_size]
             if len(final) == beam_size:
@@ -174,9 +178,10 @@ class Seq2SeqModel(BaseModel):
         #     for i in t:
         #         outputs += self.dictionary.symbols[i]    
         #     print(outputs, x["lprob"])
-
+        print(final[0]['lprob'])
         final = final[0]["str"]
         outputs = "" 
         for i in final:
             outputs += self.dictionary.symbols[i]
+        
         return outputs
