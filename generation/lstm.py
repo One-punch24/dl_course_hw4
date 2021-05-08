@@ -80,7 +80,7 @@ class Seq2SeqModel(BaseModel):
         self.dec = nn.LSTM(300,sz * 2,cen, batch_first = True )
         self.fc1 = nn.Linear(sz * 4,sz * 2)
         self.fc2 = nn.Linear(sz * 2,l)
-        # self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.5)
 
         self.k_proj = nn.Linear(sz * 2, sz * 2)
         self.v_proj = nn.Linear(sz * 2, sz * 2)
