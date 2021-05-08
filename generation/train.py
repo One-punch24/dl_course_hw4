@@ -79,7 +79,7 @@ def train(args):
             torch.save(model, args.save_dir + "/{}_{}.pt".format(args.model_type, epoch + 1))
             torch.save(optimizer.state_dict(), args.save_dir + "/{}opt_{}.pt".format(args.model_type, epoch + 1))
         evaluate(model,valid_set)
-        
+        model.eval()
         print("改革春风吹满地-->", model.generate("改革春风吹满地", beam_size=5))
         print("苟利国家生死以-->", model.generate("苟利国家生死以", beam_size=5))
 
