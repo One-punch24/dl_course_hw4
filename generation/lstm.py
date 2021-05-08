@@ -47,7 +47,7 @@ class LMModel(BaseModel):
         return outputs
 
 def get2Vec(di):
-    d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
+    d = torchtext.vocab.Vectors('../sgns.merge.word')
     vec = []
     for s in di.symbols:
         v = d.stoi.get(s,-1)
