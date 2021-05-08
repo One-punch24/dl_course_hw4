@@ -1,4 +1,5 @@
 import copy
+from math import inf
 from unicodedata import bidirectional
 from numpy.core.numeric import Inf
 import torch
@@ -68,7 +69,10 @@ class Seq2SeqModel(BaseModel):
         self.vec = get2Vec(self.dictionary)
         self.enc = nn.LSTM(300,64,2, batch_first = True, dropout=.5, bidirectional=True)
         self.dec = nn.LSTM(300,128,2, batch_first = True, dropout=.5)
-        self.fc2 = nn.Linear(128,l)
+        self.fc2 = nn.Linear(128 * 2,l)
+
+        self.k_proj = nn.Linear(128,128)
+        self.v_proj = nn.Linear(128,128)
         
     def change(self, h):
         a,b,c = h.shape
@@ -81,8 +85,23 @@ class Seq2SeqModel(BaseModel):
         # TODO
         output, hidden = self.enc(self.vec(source))
         hidden = (self.change(hidden[0]), self.change(hidden[1]))
-        logits, hidden = self.dec(self.vec(prev_outputs),hidden)
-        logits = self.fc2(logits)
+        Q, hidden = self.dec(self.vec(prev_outputs),hidden)
+        batch, SeqLen_q, Channel = Q.shape
+        SeqLen_k = output.shape[1]
+        K = self.k_proj(output)
+        V = self.v_proj(output)
+        M = torch.bmm(Q,K.permute(0,2,1))
+        pad = self.dictionary.pad()
+        key_padding_mask = (source == pad).reshape((batch,1,-1))
+        # print(M.shape, key_padding_mask.shape)
+        M = M.masked_fill(key_padding_mask,-inf)
+        M = F.softmax(M,2)
+        # print(M.shape, V.shape)
+        M = (M.unsqueeze(3)) * (V.unsqueeze(1))
+        M = M.sum(2)
+        # print(M.shape)
+        # print(Q.shape)
+        logits = self.fc2(torch.cat([M,Q],2))
         return logits
 
     def get_loss(self, source, prev_outputs, target, reduce=True, **unused):
