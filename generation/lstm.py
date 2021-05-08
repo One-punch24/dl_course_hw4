@@ -59,7 +59,8 @@ def get2Vec(di):
         vec.append(v)
     vec = torch.stack(vec)
     emb = nn.Embedding(len(di),300)
-    emb.from_pretrained(vec)
+    emb.from_pretrained(vec,freeze=True)
+    
     return emb
 
 
@@ -71,12 +72,15 @@ class Seq2SeqModel(BaseModel):
         l = len(self.dictionary)
         # self.emb = nn.Embedding(l, 32)
         self.vec = get2Vec(self.dictionary)
-        self.enc = nn.LSTM(300,64,2, batch_first = True, dropout=.5, bidirectional=True)
-        self.dec = nn.LSTM(300,128,2, batch_first = True, dropout=.5)
-        self.fc2 = nn.Linear(128 * 2,l)
+        sz = 512
+        self.enc = nn.LSTM(300,sz,1, batch_first = True, dropout=.5, bidirectional=True)
+        self.dec = nn.LSTM(300,sz * 2,1, batch_first = True, dropout=.5)
+        self.fc1 = nn.Linear(sz * 4,sz * 2)
+        self.fc2 = nn.Linear(sz * 2,l)
+        self.dropout = nn.Dropout(0.5)
 
-        self.k_proj = nn.Linear(128,128)
-        self.v_proj = nn.Linear(128,128)
+        self.k_proj = nn.Linear(sz * 2,sz * 2)
+        self.v_proj = nn.Linear(sz * 2,sz * 2)
         
     def change(self, h):
         a,b,c = h.shape
@@ -94,6 +98,7 @@ class Seq2SeqModel(BaseModel):
         SeqLen_k = output.shape[1]
         K = self.k_proj(output)
         V = self.v_proj(output)
+        V = self.dropout(V)
         M = torch.bmm(Q,K.permute(0,2,1))
         pad = self.dictionary.pad()
         key_padding_mask = (source == pad).reshape((batch,1,-1))
@@ -105,7 +110,9 @@ class Seq2SeqModel(BaseModel):
         M = M.sum(2)
         # print(M.shape)
         # print(Q.shape)
-        logits = self.fc2(torch.cat([M,Q],2))
+        x = self.fc1(torch.cat([M,Q],2))
+        x = F.tanh(self.dropout(x))
+        logits = self.fc2(x)
         return logits
 
     def get_loss(self, source, prev_outputs, target, reduce=True, **unused):
