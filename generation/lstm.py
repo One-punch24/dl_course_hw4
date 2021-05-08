@@ -83,7 +83,7 @@ class Seq2SeqModel(BaseModel):
         # self.dropout = nn.Dropout(0.5)
 
         self.k_proj = nn.Linear(sz * 2, sz * 2 * cen)
-        self.v_proj = nn.Linear(sz * 2 * cen, sz * 2 * cen)
+        self.v_proj = nn.Linear(sz * 2, sz * 2 * cen)
         
     def change(self, h):
         a,b,c = h.shape
