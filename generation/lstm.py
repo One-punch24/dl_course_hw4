@@ -76,8 +76,8 @@ class Seq2SeqModel(BaseModel):
         sz = 512
         cen = 2
         
-        self.enc = nn.LSTM(300,sz,cen, batch_first = True, dropout=.5, bidirectional=True)
-        self.dec = nn.LSTM(300,sz * 2,cen, batch_first = True, dropout=.5)
+        self.enc = nn.LSTM(300,sz,cen, batch_first = True, bidirectional=True)
+        self.dec = nn.LSTM(300,sz * 2,cen, batch_first = True )
         self.fc1 = nn.Linear(sz * 4,sz * 2)
         self.fc2 = nn.Linear(sz * 2,l)
         # self.dropout = nn.Dropout(0.5)
