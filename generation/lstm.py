@@ -73,11 +73,12 @@ class Seq2SeqModel(BaseModel):
         # self.emb = nn.Embedding(l, 32)
         self.vec = get2Vec(self.dictionary)
         sz = 512
+        
         self.enc = nn.LSTM(300,sz,1, batch_first = True, dropout=.5, bidirectional=True)
         self.dec = nn.LSTM(300,sz * 2,1, batch_first = True, dropout=.5)
         self.fc1 = nn.Linear(sz * 4,sz * 2)
         self.fc2 = nn.Linear(sz * 2,l)
-        self.dropout = nn.Dropout(0.5)
+        # self.dropout = nn.Dropout(0.5)
 
         self.k_proj = nn.Linear(sz * 2,sz * 2)
         self.v_proj = nn.Linear(sz * 2,sz * 2)
