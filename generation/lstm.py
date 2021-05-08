@@ -47,15 +47,15 @@ class LMModel(BaseModel):
         return outputs
 
 def get2Vec(di):
-    # d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
+    d = torchtext.vocab.Vectors('../sgns.literature.bigram-char')
     vec = []
     for s in di.symbols:
-        # v = d.stoi.get(s,-1)
-        # if v == -1:
-        #     v = torch.randn(300)
-        # else:
-        #     v = d.vectors[v]
-        v = torch.randn(300)
+        v = d.stoi.get(s,-1)
+        if v == -1:
+            v = torch.randn(300)
+        else:
+            v = d.vectors[v]
+        # v = torch.randn(300)
         vec.append(v)
     vec = torch.stack(vec)
     emb = nn.Embedding(len(di),300)
